@@ -5,6 +5,7 @@
 ///<reference path="YoutubePageContextScript.js"/>
 ///<reference path="chromeStorage.js"/>
 
+window.console.log = function() {}
 var cvRafId;
 var youtubePlayerState = 1;
 var isEmbed = false;
@@ -15,14 +16,14 @@ var PLAYER_VERSION_OLD = 'OLD';
 var PLAYER_VERSION_20150801 = '20150801';
 var playerVersion = PLAYER_VERSION_20150801;
 
-function getVRDevices() {
+function getVRDisplays() {
   return new Promise(function(resolve, reject){
     var isReady = vrHMD === 'ready';
     vrHMD = null;
-    if (navigator.getVRDevices) {
-      navigator.getVRDevices().then(function (devices) {
+    if (navigator.getVRDisplays) {
+      navigator.getVRDisplays().then(function (devices) {
         for (var i = 0; i < devices.length; i++) {
-          if (devices[i] instanceof HMDVRDevice) {
+          if (devices[i].capabilities.hasExternalDisplay) {
             vrHMD = devices[i];
             eyeFOVL = vrHMD.getEyeParameters('left');
             eyeFOVR = vrHMD.getEyeParameters('right');
@@ -30,7 +31,7 @@ function getVRDevices() {
           }
         }
         for (var i = 0; i < devices.length; i++) {
-          if (devices[i] instanceof PositionSensorVRDevice) {
+          if (devices[i].capabilities.hasPosition) {
             vrPositionSensor = devices[i];
           }
         }
@@ -44,12 +45,10 @@ function getVRDevices() {
 }
 
 window.addEventListener('wdoYoutubePlayerReady', function (event) {
-  console.log('Youtube Player Ready');
   detectChangeVideo();
 }, false);
 
 window.addEventListener('wdoChangeStateYoutubePlayer', function (event) {
-  console.log('state', event.detail);
   youtubePlayerState = event.detail;
 
   if (youtubePlayerState === -1) {
@@ -104,10 +103,9 @@ function initViewer() {
   }
 
   videoTitle = title.textContent;
-  console.log('videoTitle', videoTitle);
   viewerInfo.reset();
   getViewerInfo(videoTitle);
-  getVRDevices();
+  getVRDisplays();
   //if(!vrHMD)
 
   //disposePanoramaViewer();
